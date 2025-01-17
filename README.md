@@ -1,191 +1,148 @@
-# Membangun Single Page Application menggunakan React
+# Membangun SPA + API, Context, dan Hooks
 
-Proyek ini adalah submission pertama pada course **Belajar Fundamental Aplikasi Web dengan React** di [Dicoding](dicoding.com).
+Proyek ini adalah submission akhir pada course **Belajar Fundamental Aplikasi Web dengan React** di [Dicoding](dicoding.com).
 
 ## Referensi
 
-Silakan akses link contoh dari Aplikasi Catatan Pribadi V1 berikut agar Anda memiliki bayangan seperti apa harus membuat proyek submission-nya.
+Silakan akses link contoh dari Aplikasi Catatan Pribadi V2 berikut agar Anda memiliki bayangan seperti apa harus membuat proyek submission-nya.
 
-https://dicoding-react-notes-app-v1.netlify.app/
-
-## Starter Project
-
-Anda bisa memanfaatkan project starter berikut untuk pengerjaan submission, tetapi bila tidak pun tidak masalah.
-
-https://github.com/dicodingacademy/a413-react-fundamental-labs/raw/099-shared-files/02-submissions/personal-notes-app-starter.zip
+https://dicoding-react-notes-app-v2.netlify.app/
 
 ## Kriteria
 
 **Utama**
 
-1. Minimal terdapat 2 halaman yang berbeda
+1. Memanfaatkan RESTful API sebagai sumber data
 
-   - Halaman 1: menampilkan daftar catatan.
-   - Halaman 2: menampilkan detail catatan atau catatan secara tunggal.
+   Aplikasi harus memanfaatkan RESTful API sebagai sumber data dengan detail berikut.
 
-2. Daftar catatan
+   - RESTful API yang digunakan adalah https://notes-api.dicoding.dev/v1. Dokumentasi API bisa Anda akses pada tautan tersebut.
+   - Harus menggunakan RESTful API sebagai sumber data dalam berbagai fitur di aplikasi catatan, seperti:
+     - registrasi dan autentikasi,
+     - daftar catatan,
+     - daftar catatan terarsip (opsional),
+     - detil catatan,
+     - arsip/batal arsip catatan (opsional), dan
+     - hapus catatan.
+   - Karena kelas ini fokus membahas React, bukan penggunaan Fetch API, kami telah menyediakan fungsi dalam bertransaksi dengan API. Anda bisa melihatnya pada bilah **Referensi**.
 
-   - Menampilkan daftar catatan dengan data awal (initial data) yang kami sediakan.
-   - Data yang ditampilkan pada daftar catatan adalah
-     - judul catatan (**title**),
-     - waktu pembuatan (**createdAt**), dan
-     - isi catatan (**body**).
-   - Terdapat conditional rendering di mana bila tidak terdapat data catatan, UI menampilkan pesan “**Tidak ada catatan**” atau pesan apa pun yang mengindikasikan data catatan kosong.
+2. Registrasi dan Autentikasi Pengguna
 
-3. Detail catatan
+   Aplikasi memiliki fitur registrasi dan autentikasi (login) pengguna dengan detail berikut.
 
-   - Menampilkan catatan tunggal yang dipilih pengguna dari daftar catatan aktif atau diarsipkan.
-   - Menggunakan **id** catatan sebagai _path parameter_ dalam menampilkan halaman detail catatan.
-   - Catatan yang tampil harus sesuai dengan **id** yang terdapat pada path parameter.
-   - Halaman Detil Catatan harus dapat diakses langsung dengan menggunakan URL.
+   - Membuat halaman baru untuk registrasi pengguna dengan input:
+     - nama,
+     - email,
+     - password, dan
+     - confirm password (opsional)
+   - Membuat halaman baru untuk autentikasi (login) pengguna dengan input email dan password.
+   - Menyimpan access token dari proses autentikasi di local storage (Anda bisa gunakan fungsi yang telah kami sediakan).
+   - Simpan data pengguna yang terautentikasi pada komponen state untuk mengetahui pengguna telah terautentikasi atau belum.
+   - Menyediakan tombol logout (keluar aplikasi) untuk menghapus autentikasi pengguna yang tersimpan.
 
-4. Menambahkan catatan baru
+3. Memproteksi Fitur Catatan
 
-   - Memanfaatkan controlled component dalam membuat form input.
-   - Data catatan disimpan cukup pada memori saja (akan hilang jika browser di-refresh). Disarankan untuk memanfaatkan fungsi menyimpan catatan yang disediakan.
-   - Data catatan yang disimpan merupakan objek JavaScript dengan struktur berikut:
+   Fitur catatan hanya dapat diakses oleh pengguna yang telah terautentikasi. Berikut detailnya.
 
-     ```js
-     {
-         id: string,
-         title: string,
-         body: string,
-         archived: boolean,
-         createdAt: string,
-     }
-     ```
+   - Fitur catatan seperti daftar catatan, detail catatan, dan hapus catatan hanya dapat diakses bila pengguna telah melakukan autentikasi. Bila belum, pengguna hanya dapat mengakses halaman login atau registrasi saja.
+   - Menampilkan resource catatan yang hanya dimiliki oleh pengguna yang terautentikasi.
 
-     Berikut contoh data riilnya:
+4. Ubah Tema
 
-     ```js
-     {
-         id: 'notes-1',
-         title: "Babel",
-         body: "Babel merupakan tools open-source yang digunakan untuk mengubah sintaks ECMAScript 2015+ menjadi sintaks yang didukung oleh JavaScript engine versi lama. Babel sering dipakai ketika kita menggunakan sintaks terbaru termasuk sintaks JSX.",
-         archived: false,
-         createdAt: '2022-04-14T04:27:34.572Z'
-     }
-     ```
+   Aplikasi harus memiliki fitur ubah tema. Berikut detailnya:
 
-   **Catatan tambahan**
+   - Menyediakan tombol untuk mengubah tema gelap/terang.
+   - Memanfaatkan React Context dalam membangun fitur ubah tema.
+   - Menyimpan perubahan tema ke local storage agar perubahannya persisten.
 
-   - Properti **id** pada tiap catatan yang disimpan haruslah unik. Tips dalam menetapkan nilai untuk adalah Anda bisa memanfaatkan nilai _timestamp_. Untuk mendapatkan nilai timestamp di JavaScript cukup mudah, cukup dengan menuliskan expressions **+new Date()**.
-   - Fungsi tambah catatan bisa ditampilkan pada halaman terpisah. Contohnya, pada URL **/notes/new.**
+5. Menggunakan Hooks
 
-5. Menghapus catatan
+   Aplikasi menerapkan Hooks setidaknya untuk fitur/kode baru. Berikut detailnya:
 
-   - Aplikasi harus menyediakan tombol **hapus** untuk menghapus data catatan yang disimpan.
-   - Tombol hapus boleh diletakkan di mana saja, tetapi pastikan pengguna dapat mengaksesnya dengan baik. Sebagai contoh, Anda bisa menampilkan pada halaman detail catatan dan/atau daftar catatan.
+   - Menerapkan Hooks dalam pengelolaan state setidaknya untuk fitur/kode pada halaman registrasi dan autentikasi pengguna.
 
-6. Memvalidasi properti
-   - Memvalidasi seluruh masukkan (props) yang diterima komponen menggunakan PropTypes.
-   - Sebelum mengirimkan submission, pastikan tidak ada warning terkait validasi komponen.
+6. Memenuhi seluruh kriteria utama submission sebelumnya
+
+   Aplikasi harus dapat mempertahankan kriteria utama dari submission sebelumnya. Berikut detailnya.
+
+   - Minimal terdapat 2 halaman yang berbeda.
+   - Daftar catatan.
+   - Detail catatan.
+   - Menambahkan catatan baru.
+   - Menghapus catatan.
+   - Memvalidasi properti.
 
 **Opsional**
 
-1. Arsip Catatan
+1. Menampilkan indikasi loading
 
-   - Catatan terarsip adalah catatan yang properti **archived** bernilai **true**.
-   - Menyediakan halaman baru untuk menampilkan daftar catatan yang terarsip.
-     - Data yang ditampilkan pada daftar catatan adalah
-       - judul catatan (**title**),
-       - waktu pembuatan (**createdAt**), dan
-       - isi catatan (**body**).
-     - Terdapat conditional rendering di mana bila tidak terdapat data catatan, maka UI menampilkan pesan “**Arsip kosong**” atau pesan apa pun yang mengindikasikan data catatan terarsip kosong.
-   - Mengarsipkan catatan.
-   - Aplikasi harus menyediakan tombol arsip dan batal arsip untuk mengarsipkan dan memindahkan catatan dari arsip.
-   - Tombol arsip dan batal arsip bisa diletakkan di mana saja, tetapi pastikan pengguna dapat mengaksesnya dengan baik. Sebagai contoh, Anda bisa menampilkan pada halaman detail catatan dan/atau daftar catatan.
+   - Aplikasi harus menampilkan indikasi loading ketika memuat data dari RESTful API sedang berlangsung.
+   - Indikasi loading bisa apa pun, yang penting tidak mengganggu pengalaman pengguna. Gunakanlah kreativitas Anda.
 
-2. Pencarian catatan
+2. Fitur ubah bahasa
 
-   - Aplikasi memiliki fitur pencarian catatan berdasarkan kata kunci yang dimasukkan, dengan ketentuan:
-     - Jika kolom pencarian tidak kosong, maka aplikasi **hanya menampilkan daftar catatan yang judulnya mengandung kata kunci yang dimasukkan**.
-     - Jika kolom pencariannya kosong, maka aplikasi menampilkan seluruh catatan.
-   - Memanfaatkan search parameter agar pencarian bersifat shareable melalui URL.
-   - Memanfaatkan _controlled component_ dalam membangun input pencarian.
-
-3. 404 Pages
-   - Aplikasi menyediakan halaman khusus bila pengguna mengakses URL aplikasi dengan alamat yang tidak diketahui/diharapkan.
+   - Menyediakan tombol untuk mengubah bahasa Indonesia ke Inggris, atau sebaliknya.
+   - Memanfaatkan React Context dalam membangun fitur ubah bahasa.
+   - Menyimpan perubahan bahasa ke local storage agar perubahannya persisten.
 
 ## Tips & Tricks
 
-- **Manfaatkan atribut contentEditable sebagai input isi (body) catatan**
+**Ekstraksi duplikasi logika dengan custom hooks**
 
-  Aplikasi akan lebih keren bila isi catatan mendukung _rich format_ sehingga dapat menampilkan format baris baru, **bold**, _italic_, dan sebagainya. Untuk mendukung hal tersebut, pada isi catatan, alih-alih menyimpan plain text, simpanlah teks yang sudah terformat dengan HTML. Masalahnya adalah, bila Anda memanfaatkan input seperti textarea, value yang dihasilkan input hanyalah plain text, bukan HTML formatted text. Bagaimana cara membuat input seperti text area, tetapi menghasilkan format HTML?
+Dalam pengerjaan submission ke-2 setidaknya Anda akan membuat UI input pada halaman login dan registrasi. Ketika membangun UI input dengan controlled component, Anda akan menuliskan logika yang sama dalam membangun setiap inputnya. Karena itu, kami sarankan untuk mengekstraksi kode logika yang sifatnya nonvisual dalam membangun controlled component menggunakan custom hooks.
 
-  Untuk mencapai tujuan tersebut, alih-alih menggunakan **textarea**, gunakanlah block elemen (contohnya **div**) dengan menambahkan atribut bernama **contentEditable**.
+Berikut adalah contoh custom hooks yang bisa Anda buat untuk logika input.
 
-  ```js
-  // UI
-  <div
-    className="add-new-page__input__body"
-    data-placeholder="Sebenarnya saya adalah ...."
-    contentEditable
-  />
-  ```
+```js
+import { useState } from "react";
 
-  Anda bisa sinkronisasi nilai di dalam **contentEditable** dengan komponen state melalui event **onInput** seperti ini.
+function useInput(defaultValue = "") {
+  const [value, setValue] = useState(defaultValue);
 
-  ```js
-  // handler
-  onInputHandler(event) {
-      this.setState(() => {
-          return {
-          body: event.target.innerHTML, // Ingat! innerHTML, bukan value.
-          }
-      });
-  }
+  const onValueChangeHandler = (event) => {
+    setValue(event.target.value);
+  };
 
+  return [value, onValueChangeHandler];
+}
 
-  // UI on render()
-  <div
-  className="add-new-page__input__body"
-  data-placeholder="Sebenarnya saya adalah ...."
-  contentEditable
-  onInput={this.onInputHandler}
-  />
-  ```
+export default useInput;
+```
 
-  Dengan begitu, body akan menyimpan nilai HTML formatted text. Contohnya.
+Selanjutnya, Anda bisa gunakan custom hooks tersebut dalam membangun controlled component.
 
-  ```js
-  "<p>Ini adalah <strong>contoh nilai string</strong> yang berada di dalam state body</p>";
-  ```
+```js
+function InputLogin() {
+  const [email, onEmailChange] = useInput("");
+  const [password, onPasswordChange] = useInput("");
 
-  Selanjutnya, untuk merender teks tersebut dalam bentuk HTML, kami sarankan Anda untuk menggunakan package **html-react-parser** agar prosesnya mudah.
-
-  ```js
-  import parser from "html-react-parser";
-
-  function SomeComponent({ body }) {
-    return <div>{parser(body)}</div>;
-  }
-  ```
-
-- **Buat folder dalam mengelompokkan berkas JavaScript yang dibuat**
-
-  Agar source code dari aplikasi Anda mudah untuk dikelola dan disenangi oleh reviewer, kami sangat menyarankan Anda untuk mengelompokkan berkas JavaScript berdasarkan peran dan fungsinya. Contoh, Anda bisa membuat folder bernama pages untuk menampung seluruh berkas komponen yang berperan sebagai “halaman aplikasi”. Berikut adalah struktur folder yang kami rekomendasikan pada submission ini.
-
-  ```js
-  -public - // menampung berkas statis yang dapat diakses melalui URL (public)
-    src - // menampung seluruh berkas source code (di luar konfigurasi)
-    components - // folder yang berisi React Component
-    pages - // folder yang berisi React Component yang berperan sebagai pages
-    styles - // folder yang berisi CSS
-    utils - // folder yang berisi fungsi yang bersifat reusable antar komponen
-    index.js - // berkas JavaScript utama
-    App.js; // berkas komponen aplikasi
-  ```
+  return (
+    <div className="input-login">
+      <label htmlFor="email">Email</label>
+      <input type="email" id="email" value={email} onChange={onEmailChange} />
+      <label htmlFor="password">Password</label>
+      <input
+        type="password"
+        id="password"
+        value={password}
+        onChange={onPasswordChange}
+      />
+      // etc ..
+    </div>
+  );
+}
+```
 
 ## Penilaian
 
 Submission Anda akan dinilai oleh Reviewer dengan skala 1-5. Untuk mendapatkan nilai tinggi, Anda bisa menerapkan beberapa saran berikut:
 
-- Menerapkan kriteria opsional 1: Terdapat Fitur Pencarian Catatan.
-- Menerapkan kriteria opsional 2: Terdapat Fitur Arsip Catatan.
-- Menerapkan kriteria opsional 3: Menyediakan halaman 404.
+- Menerapkan kriteria opsional pada submission sebelumnya.
+- Menerapkan kriteria opsional 1: Menampilkan indikasi loading.
+- Menerapkan kriteria opsional 2: Menerapkan fitur ubah bahasa.
 - Menuliskan kode dengan baik.
-  - Tidak membuat class component yang tidak diperlukan.
+  - Mengekstraksi duplikasi logika menggunakan custom hooks.
+  - Membuat Class Component hanya jika diperlukan saja. Contohnya, ketika sebuah komponen perlu menggunakan state atau memanfaatkan lifecycle method. Selebihnya, gunakanlah function component.
   - Memecah UI menjadi komponen sekecil mungkin (sesuai tanggung jawabnya).
   - Gaya penulisan kode harus konsisten, seperti penggunaan single quote/double quote ketika membuat nilai string, jumlah spasi dalam indentasi kode, atau penggunaan semicolon pada akhir statement.
 
