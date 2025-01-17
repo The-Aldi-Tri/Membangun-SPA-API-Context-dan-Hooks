@@ -8,6 +8,8 @@ Silakan akses link contoh dari Aplikasi Catatan Pribadi V2 berikut agar Anda mem
 
 https://dicoding-react-notes-app-v2.netlify.app/
 
+Pada kelas ini fokus membahas React, bukan penggunaan Fetch API, sehingga untuk bagian transaksi data ke API, kami sudah menyediakan fungsi yang bisa Anda manfaatkan. Anda bisa mendapatkan kodenya pada tautan: [network-data.js](https://github.com/dicodingacademy/a413-react-fundamental-labs/blob/099-shared-files/02-submissions/share-code/network-data.js). Anda bisa unduh kode tersebut dan simpan pada proyek submission, contohnya pada folder src -> utils.
+
 ## Kriteria
 
 **Utama**
