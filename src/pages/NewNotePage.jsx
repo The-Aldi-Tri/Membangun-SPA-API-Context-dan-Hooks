@@ -1,6 +1,6 @@
-import PropTypes from "prop-types";
 import React from "react";
 import SaveNoteButton from "../components/SaveNoteButton";
+import { addNote } from "../utils/network-data";
 
 class NewNotePage extends React.Component {
   constructor(props) {
@@ -46,8 +46,8 @@ class NewNotePage extends React.Component {
         </div>
         <div className="add-new-page__action">
           <SaveNoteButton
-            handleOnClick={() =>
-              this.props.handleNewNote({
+            handleOnClick={async () =>
+              await addNote({
                 title: this.state.title,
                 body: this.state.body,
               })
@@ -58,9 +58,5 @@ class NewNotePage extends React.Component {
     );
   }
 }
-
-NewNotePage.propTypes = {
-  handleNewNote: PropTypes.func.isRequired,
-};
 
 export default NewNotePage;

@@ -1,21 +1,38 @@
-import PropTypes from "prop-types";
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ArchiveNoteButton from "../components/ArchiveNoteButton";
 import DeleteNoteButton from "../components/DeleteNoteButton";
 import NoteDetail from "../components/NoteDetail";
 import UnarchiveNoteButton from "../components/UnarchiveNoteButton";
+import {
+  archiveNote,
+  deleteNote,
+  getNote,
+  unarchiveNote,
+} from "../utils/network-data";
 import NotFoundPage from "./NotFoundPage";
 
-function DetailPage({
-  getNote,
-  handleArchiveNote,
-  handleUnarchiveNote,
-  handleDeleteNote,
-}) {
+function DetailPage() {
   const { noteId } = useParams();
-  const note = getNote(noteId);
+  const [note, setNote] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    const fetchNote = async () => {
+      const { error, data } = await getNote(noteId);
+      if (!error && data) {
+        setNote(data);
+      }
+      setLoading(false);
+    };
+
+    fetchNote();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return note ? (
     <section className="detail-page">
@@ -27,22 +44,22 @@ function DetailPage({
       <div className="detail-page__action">
         {note.archived ? (
           <UnarchiveNoteButton
-            handleOnClick={() => {
-              handleUnarchiveNote(noteId);
+            handleOnClick={async () => {
+              await unarchiveNote(noteId);
               navigate("/archives");
             }}
           />
         ) : (
           <ArchiveNoteButton
-            handleOnClick={() => {
-              handleArchiveNote(noteId);
+            handleOnClick={async () => {
+              await archiveNote(noteId);
               navigate("/");
             }}
           />
         )}
         <DeleteNoteButton
-          handleOnClick={() => {
-            handleDeleteNote(noteId);
+          handleOnClick={async () => {
+            await deleteNote(noteId);
             note.archived ? navigate("/archives") : navigate("/");
           }}
         />
@@ -52,12 +69,5 @@ function DetailPage({
     <NotFoundPage />
   );
 }
-
-DetailPage.propTypes = {
-  getNote: PropTypes.func.isRequired,
-  handleArchiveNote: PropTypes.func.isRequired,
-  handleUnarchiveNote: PropTypes.func.isRequired,
-  handleDeleteNote: PropTypes.func.isRequired,
-};
 
 export default DetailPage;

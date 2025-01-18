@@ -1,120 +1,125 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
-import ArchivePageWrapper from "./components/ArchivePageWrapper";
 import Header from "./components/Header";
-import HomePageWrapper from "./components/HomePageWrapper";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { LocaleProvider } from "./contexts/LocaleContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import { UserProvider } from "./contexts/UserContext";
+import ArchivePage from "./pages/ArchivePage";
 import DetailPage from "./pages/DetailPage";
+import HomePage from "./pages/HomePage";
+import LoginPage from "./pages/LoginPage";
 import NewNotePage from "./pages/NewNotePage";
 import NotFoundPage from "./pages/NotFoundPage";
-import { getAllNotes } from "./utils/local-data";
+import RegisterPage from "./pages/RegisterPage";
+import {
+  getAccessToken,
+  getUserLogged,
+  putAccessToken,
+} from "./utils/network-data";
 
 class App extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      notes: getAllNotes(),
+      theme: localStorage.getItem("theme") || "light",
+      toggleTheme: () => {
+        this.setState((prevState) => {
+          const newTheme = prevState.theme === "light" ? "dark" : "light";
+          localStorage.setItem("theme", newTheme);
+          return { theme: newTheme };
+        });
+      },
+
+      locale: localStorage.getItem("locale") || "id",
+      toggleLocale: () => {
+        this.setState((prevState) => {
+          const newLocale = prevState.locale === "id" ? "en" : "id";
+          localStorage.setItem("locale", newLocale);
+          return { locale: newLocale };
+        });
+      },
+
+      initializing: true,
+      authUser: null,
+      onLogin: async (accessToken) => {
+        putAccessToken(accessToken);
+        const { error, data } = await getUserLogged();
+        if (!error && data) {
+          this.setState({ authUser: data });
+        }
+      },
+      onLogout: () => {
+        putAccessToken(null);
+        this.setState({ authUser: null });
+      },
     };
-
-    this.handleArchiveNote = this.handleArchiveNote.bind(this);
-    this.handleUnarchiveNote = this.handleUnarchiveNote.bind(this);
-    this.handleDeleteNote = this.handleDeleteNote.bind(this);
-    this.handleNewNote = this.handleNewNote.bind(this);
-    this.getActiveNotes = this.getActiveNotes.bind(this);
-    this.getArchivedNotes = this.getArchivedNotes.bind(this);
-    this.getNote = this.getNote.bind(this);
   }
 
-  handleArchiveNote(noteId) {
-    this.setState({
-      notes: this.state.notes.map((note) => {
-        if (note.id === noteId) {
-          return { ...note, archived: true };
-        }
-        return note;
-      }),
-    });
+  async componentDidMount() {
+    document.documentElement.setAttribute("data-theme", this.state.theme);
+
+    const accessToken = getAccessToken();
+
+    if (accessToken) {
+      const { error, data } = await getUserLogged();
+
+      if (!error && data) {
+        this.setState({ authUser: data });
+      }
+    }
+
+    this.setState({ initializing: false });
   }
 
-  handleUnarchiveNote(noteId) {
-    this.setState({
-      notes: this.state.notes.map((note) => {
-        if (note.id === noteId) {
-          return { ...note, archived: false };
-        }
-        return note;
-      }),
-    });
-  }
-
-  handleDeleteNote(noteId) {
-    this.setState({
-      notes: this.state.notes.filter((note) => note.id !== noteId),
-    });
-  }
-
-  handleNewNote({ title, body }) {
-    this.setState({
-      notes: [
-        ...this.state.notes,
-        {
-          id: `notes-${+new Date()}`,
-          title: title || "(untitled)",
-          body,
-          createdAt: new Date().toISOString(),
-          archived: false,
-        },
-      ],
-    });
-  }
-
-  getActiveNotes() {
-    return this.state.notes.filter((note) => !note.archived);
-  }
-
-  getArchivedNotes() {
-    return this.state.notes.filter((note) => note.archived);
-  }
-
-  getNote(noteId) {
-    return this.state.notes.find((note) => note.id === noteId);
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.theme !== this.state.theme) {
+      document.documentElement.setAttribute("data-theme", this.state.theme);
+    }
   }
 
   render() {
+    if (this.state.initializing) {
+      return <div>Loading...</div>;
+    }
+
     return (
-      <div className="app-container">
-        <Header />
-        <main>
-          <Routes>
-            <Route
-              path="/"
-              element={<HomePageWrapper getActiveNotes={this.getActiveNotes} />}
-            />
-            <Route
-              path="/archives"
-              element={
-                <ArchivePageWrapper getArchivedNotes={this.getArchivedNotes} />
-              }
-            />
-            <Route
-              path="/notes/new"
-              element={<NewNotePage handleNewNote={this.handleNewNote} />}
-            />
-            <Route
-              path="/notes/:noteId"
-              element={
-                <DetailPage
-                  getNote={this.getNote}
-                  handleArchiveNote={this.handleArchiveNote}
-                  handleUnarchiveNote={this.handleUnarchiveNote}
-                  handleDeleteNote={this.handleDeleteNote}
-                />
-              }
-            />
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </main>
-      </div>
+      <ThemeProvider
+        value={{ theme: this.state.theme, toggleTheme: this.state.toggleTheme }}
+      >
+        <LocaleProvider
+          value={{
+            locale: this.state.locale,
+            toggleLocale: this.state.toggleLocale,
+          }}
+        >
+          <UserProvider
+            value={{
+              authUser: this.state.authUser,
+              onLogin: this.state.onLogin,
+              onLogout: this.state.onLogout,
+            }}
+          >
+            <div className="app-container">
+              <Header />
+              <main>
+                <Routes>
+                  <Route element={<ProtectedRoute />}>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/archives" element={<ArchivePage />} />
+                    <Route path="/notes/new" element={<NewNotePage />} />
+                    <Route path="/notes/:noteId" element={<DetailPage />} />
+                  </Route>
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+                  <Route path="*" element={<NotFoundPage />} />
+                </Routes>
+              </main>
+            </div>
+          </UserProvider>
+        </LocaleProvider>
+      </ThemeProvider>
     );
   }
 }

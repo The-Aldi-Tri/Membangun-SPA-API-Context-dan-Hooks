@@ -1,73 +1,67 @@
-import PropTypes from "prop-types";
 import React from "react";
+import { useSearchParams } from "react-router-dom";
 import NewNoteButton from "../components/NewNoteButton";
 import NotesList from "../components/NotesList";
 import SearchBar from "../components/SearchBar";
+import LocaleContext from "../contexts/LocaleContext";
+import { getActiveNotes } from "../utils/network-data";
 
-class HomePage extends React.Component {
-  constructor(props) {
-    super(props);
+function HomePage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [keyword, setKeyword] = React.useState(
+    searchParams.get("keyword") || "",
+  );
+  const [activeNotes, setActiveNotes] = React.useState([]);
+  const [filteredNotes, setFilteredNotes] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
 
-    this.state = {
-      filteredNotes: this.props.activeKeyword
-        ? this.props.activeNotes.filter((note) =>
-            note.title
-              .toLowerCase()
-              .includes(this.props.activeKeyword.toLowerCase()),
-          )
-        : [],
+  const { locale } = React.useContext(LocaleContext);
+
+  React.useEffect(() => {
+    const fetchActiveNotes = async () => {
+      const { error, data } = await getActiveNotes();
+      if (!error && data) {
+        setActiveNotes(data);
+      }
+      setLoading(false);
     };
 
-    this.handleOnSearch = this.handleOnSearch.bind(this);
-  }
+    fetchActiveNotes();
+  }, []);
 
-  handleOnSearch(event) {
-    const keyword = event.target.value;
-    this.setState({
-      filteredNotes: keyword
-        ? this.props.activeNotes.filter((note) =>
-            note.title.toLowerCase().includes(keyword.toLowerCase()),
-          )
-        : [],
-    });
-    this.props.onSearch(keyword);
-  }
+  React.useEffect(() => {
+    setFilteredNotes(() =>
+      activeNotes.filter((note) =>
+        note.title.toLowerCase().includes(keyword.toLowerCase()),
+      ),
+    );
+  }, [keyword, activeNotes]);
 
-  render() {
-    return (
-      <section className="homepage">
-        <h2>Catatan Aktif</h2>
-        <SearchBar
-          keyword={this.props.activeKeyword}
-          onSearchChange={this.handleOnSearch}
-        />
+  return (
+    <section className="homepage">
+      <h2>{locale === "en" ? "Active Note" : "Catatan Aktif"}</h2>
+      <SearchBar
+        keyword={keyword}
+        onSearchChange={(event) => {
+          setSearchParams({ keyword: event.target.value });
+          setKeyword(event.target.value);
+        }}
+      />
+      {loading ? (
+        <div>Fetching...</div>
+      ) : (
         <NotesList
-          notes={
-            this.props.activeKeyword
-              ? this.state.filteredNotes
-              : this.props.activeNotes
+          notes={keyword ? filteredNotes : activeNotes}
+          emptyPlaceholder={
+            locale === "en" ? "No active note" : "Tidak ada catatan"
           }
         />
-        <div className="homepage__action">
-          <NewNoteButton />
-        </div>
-      </section>
-    );
-  }
+      )}
+      <div className="homepage__action">
+        <NewNoteButton />
+      </div>
+    </section>
+  );
 }
-
-HomePage.propTypes = {
-  activeNotes: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      title: PropTypes.string.isRequired,
-      body: PropTypes.string.isRequired,
-      createdAt: PropTypes.string.isRequired,
-      archived: PropTypes.bool.isRequired,
-    }),
-  ),
-  onSearch: PropTypes.func.isRequired,
-  activeKeyword: PropTypes.string,
-};
 
 export default HomePage;

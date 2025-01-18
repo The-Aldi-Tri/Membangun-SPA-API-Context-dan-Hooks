@@ -1,70 +1,63 @@
-import PropTypes from "prop-types";
 import React from "react";
+import { useSearchParams } from "react-router-dom";
 import NotesList from "../components/NotesList";
 import SearchBar from "../components/SearchBar";
+import LocaleContext from "../contexts/LocaleContext";
+import { getArchivedNotes } from "../utils/network-data";
 
-class ArchivePage extends React.Component {
-  constructor(props) {
-    super(props);
+function ArchivePage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [keyword, setKeyword] = React.useState(
+    searchParams.get("keyword") || "",
+  );
+  const [archivedNotes, setArchivedNotes] = React.useState([]);
+  const [filteredNotes, setFilteredNotes] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
 
-    this.state = {
-      filteredNotes: this.props.activeKeyword
-        ? this.props.archivedNotes.filter((note) =>
-            note.title
-              .toLowerCase()
-              .includes(this.props.archivedNotes.toLowerCase()),
-          )
-        : [],
+  const { locale } = React.useContext(LocaleContext);
+
+  React.useEffect(() => {
+    const fetchArchivedNotes = async () => {
+      const { error, data } = await getArchivedNotes();
+      if (!error && data) {
+        setArchivedNotes(data);
+      }
+      setLoading(false);
     };
 
-    this.handleOnSearch = this.handleOnSearch.bind(this);
-  }
+    fetchArchivedNotes();
+  }, []);
 
-  handleOnSearch(event) {
-    const keyword = event.target.value;
-    this.setState({
-      filteredNotes: keyword
-        ? this.props.archivedNotes.filter((note) =>
-            note.title.toLowerCase().includes(keyword.toLowerCase()),
-          )
-        : [],
-    });
-    this.props.onSearch(keyword);
-  }
-
-  render() {
-    return (
-      <section className="archives-page">
-        <h2>Catatan Arsip</h2>
-        <SearchBar
-          keyword={this.props.activeKeyword}
-          onSearchChange={this.handleOnSearch}
-        />
-        <NotesList
-          notes={
-            this.props.activeKeyword
-              ? this.state.filteredNotes
-              : this.props.archivedNotes
-          }
-          emptyPlaceholder={"Arsip Kosong"}
-        />
-      </section>
+  React.useEffect(() => {
+    setFilteredNotes(() =>
+      archivedNotes.filter((note) =>
+        note.title.toLowerCase().includes(keyword.toLowerCase()),
+      ),
     );
-  }
-}
+  }, [keyword, archivedNotes]);
 
-ArchivePage.propTypes = {
-  archivedNotes: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      title: PropTypes.string.isRequired,
-      body: PropTypes.string.isRequired,
-      createdAt: PropTypes.string.isRequired,
-      archived: PropTypes.bool,
-    }),
-  ),
-  onSearch: PropTypes.func.isRequired,
-  activeKeyword: PropTypes.string,
-};
+  return (
+    <section className="archives-page">
+      <h2>{locale === "en" ? "Archive Note" : "Catatan Arsip"}</h2>
+      <SearchBar
+        keyword={keyword}
+        onSearchChange={(event) => {
+          setSearchParams({ keyword: event.target.value });
+          setKeyword(event.target.value);
+        }}
+      />
+      {loading ? (
+        <div>Fetching...</div>
+      ) : (
+        <NotesList
+          notes={keyword ? filteredNotes : archivedNotes}
+          emptyPlaceholder={
+            locale === "en" ? "No archive note" : "Arsip Kosong"
+          }
+        />
+      )}
+    </section>
+  );
+}
 
 export default ArchivePage;
