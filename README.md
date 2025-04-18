@@ -2,6 +2,8 @@
 
 Proyek ini adalah submission akhir pada course **Belajar Fundamental Aplikasi Web dengan React** di [Dicoding](dicoding.com).
 
+- Hasil: ⭐⭐⭐⭐⭐
+
 ## Referensi
 
 Silakan akses link contoh dari Aplikasi Catatan Pribadi V2 berikut agar Anda memiliki bayangan seperti apa harus membuat proyek submission-nya.
